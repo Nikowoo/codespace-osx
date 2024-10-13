@@ -25,5 +25,3 @@ RUN sudo dockerd --userns-remap=default &
 
 # Set the working directory
 WORKDIR /workspace
-
-# Your additional commands can go here
