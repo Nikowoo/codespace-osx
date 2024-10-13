@@ -1,29 +1,29 @@
-# Use a base image with X11 support
-FROM ubuntu:20.04
+FROM gitpod/workspace-full-vnc
 
-# Set environment variables
-ENV DEBIAN_FRONTEND=noninteractive
+# Install dependencies for Chrome
+RUN sudo apt-get update \
+ && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+   libgtk2.0-0 \
+   libgtk-3-0 \
+   libnotify-dev \
+   libgconf-2-4 \
+   libnss3 \
+   libxss1 \
+   libasound2 \
+   libxtst6 \
+   xauth \
+   xvfb \
+   iptables \
+ && sudo rm -rf /var/lib/apt/lists/*
 
-# Install required packages
-RUN apt-get update && \
-    apt-get install -y \
-    openbox \
-    xorg \
-    xfce4-terminal \
-    novnc \
-    websockify \
-    supervisor \
-    && apt-get clean
+# Enable user namespaces
+RUN echo 'kernel.unprivileged_userns_clone=1' | sudo tee -a /etc/sysctl.conf && \
+    sudo sysctl -p
 
-# Set up noVNC
-RUN mkdir -p /var/run/novnc && \
-    mkdir -p /etc/supervisor/conf.d
+# Ensure that Docker is running with user namespace support
+RUN sudo dockerd --userns-remap=default &
 
-# Copy the supervisor config
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Set the working directory
+WORKDIR /workspace
 
-# Expose ports
-EXPOSE 6080
-
-# Start supervisord
-CMD ["/usr/bin/supervisord"]
+# Your additional commands can go here
